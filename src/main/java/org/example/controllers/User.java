@@ -1,4 +1,4 @@
-package org.example;
+package org.example.controllers;
 
 public class User {
     private String nickname;

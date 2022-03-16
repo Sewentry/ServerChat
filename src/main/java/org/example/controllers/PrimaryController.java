@@ -1,18 +1,14 @@
-package org.example;
-
-import java.io.IOException;
+package org.example.controllers;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
+import org.example.models.Network;
 
 public class PrimaryController {
 
@@ -64,6 +60,11 @@ public class PrimaryController {
             showAddUserError();
         }
     }
+    private Network network;
+
+    public void setNetwork(Network network) {
+        this.network = network;
+    }
 
     private void showAddUserError() {
         Alert alert = new Alert (Alert.AlertType.ERROR);
@@ -74,11 +75,11 @@ public class PrimaryController {
     }
 
     @FXML
-    void clearAll(ActionEvent event) {
+    void clearAll() {
         messageField.clear();
     }
     @FXML
-    void getAbout(ActionEvent event) {
+    void getAbout() {
         Alert alert = new Alert (Alert.AlertType.INFORMATION);
         alert.setTitle("Author");
         alert.setHeaderText("About");
@@ -94,14 +95,20 @@ public class PrimaryController {
     void sendMessage() {
         Message message = new Message(textField.getText());
         try {
-            if(message.getMessage().length()!=0){
-                messageField.setText(messageField.getText()+"\n"+message.getMessage());
+            if(!message.getMessage().isBlank()){
+                network.sendMessage(message);
+                appendMessage(message);
             }
         }catch (NullPointerException e){
             e.printStackTrace();
             showErrorLengthAlert();
         }
         textField.clear();
+    }
+
+    public void appendMessage(Message message) {
+        messageField.appendText(message.getMessage());
+        messageField.appendText(System.lineSeparator());
     }
 
     private void showErrorLengthAlert() {
