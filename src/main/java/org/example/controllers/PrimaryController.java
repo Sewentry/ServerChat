@@ -48,17 +48,6 @@ public class PrimaryController {
 
     @FXML
     void addUser() {
-
-        User user = new User(textField.getText());
-        if(!userList.contains(user.getNickname()))
-        {
-            userField.getItems().add(user.getNickname());
-            userList.add(user.getNickname());
-            textField.clear();
-        }
-        else{
-            showAddUserError();
-        }
     }
     private Network network;
 
