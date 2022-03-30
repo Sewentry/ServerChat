@@ -1,13 +1,13 @@
 package org.example.controllers;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import java.net.URL;
-import java.util.ResourceBundle;
+import java.text.DateFormat;
+import java.util.*;
 
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import org.example.models.Network;
 
 public class PrimaryController {
@@ -37,6 +37,8 @@ public class PrimaryController {
     @FXML
     private TextArea messageField;
 
+    @FXML
+    private Label userNameField;
 
     @FXML
     private TextField textField;
@@ -44,24 +46,53 @@ public class PrimaryController {
     @FXML
     private ListView<String> userField;
 
-    private final ObservableList<String> userList = FXCollections.observableArrayList();
 
-    @FXML
-    void addUser() {
-    }
-    private Network network;
+    private String selectedRecipient;
+    private Set<String> usersOnlineSet;
 
     public void setNetwork(Network network) {
         this.network = network;
     }
 
-    private void showAddUserError() {
-        Alert alert = new Alert (Alert.AlertType.ERROR);
-        alert.setTitle("AddUserError");
-        alert.setHeaderText("This nickname is taken");
-        alert.setContentText("Please, choose another one");
-        alert.show();
+    @FXML
+    void initialize() {
+        assert About != null : "fx:id=\"About\" was not injected: check your FXML file 'primary.fxml'.";
+        assert Enter != null : "fx:id=\"Enter\" was not injected: check your FXML file 'primary.fxml'.";
+        assert File != null : "fx:id=\"File\" was not injected: check your FXML file 'primary.fxml'.";
+        assert Help != null : "fx:id=\"Help\" was not injected: check your FXML file 'primary.fxml'.";
+        assert addUserButton != null : "fx:id=\"addUserButton\" was not injected: check your FXML file 'primary.fxml'.";
+        assert clearAllButton != null : "fx:id=\"clearAllButton\" was not injected: check your FXML file 'primary.fxml'.";
+        assert messageField != null : "fx:id=\"messageField\" was not injected: check your FXML file 'primary.fxml'.";
+        assert textField != null : "fx:id=\"textField\" was not injected: check your FXML file 'primary.fxml'.";
+        assert userField != null : "fx:id=\"userField\" was not injected: check your FXML file 'primary.fxml'.";
+
+        userField.setCellFactory(lv -> {
+            MultipleSelectionModel<String> selectionModel = userField.getSelectionModel();
+            ListCell<String> cell = new ListCell<>();
+            cell.textProperty().bind(cell.itemProperty());
+            cell.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+                userField.requestFocus();
+                if (!cell.isEmpty()) {
+                    int index = cell.getIndex();
+                    if (selectionModel.getSelectedIndices().contains(index)) {
+                        selectionModel.clearSelection(index);
+                        selectedRecipient = null;
+                    } else {
+
+                            selectionModel.select(index);
+                            selectedRecipient = cell.getItem();
+                        if(selectedRecipient.equals(userNameField.getText())){
+                            selectedRecipient=null;
+                        }
+
+                    }
+                    event.consume();
+                }
+            });
+            return cell;
+        });
     }
+    private Network network;
 
     @FXML
     void clearAll() {
@@ -82,41 +113,46 @@ public class PrimaryController {
 
     @FXML
     void sendMessage() {
-        Message message = new Message(textField.getText());
-        try {
-            if(!message.getMessage().isBlank()){
-                network.sendMessage(message);
-                appendMessage(message);
+        String message = textField.getText();
+
+            if(message.isBlank()){
+               return;
             }
-        }catch (NullPointerException e){
-            e.printStackTrace();
-            showErrorLengthAlert();
-        }
+            if(selectedRecipient!=null){
+                network.sendPrivateMessage(selectedRecipient,message);
+            }else{
+                network.sendMessage(message);
+            }
+            appendMessage("Я: " + message);
+
         textField.clear();
     }
 
-    public void appendMessage(Message message) {
-        messageField.appendText(message.getMessage());
+
+    public void appendMessage(String message) {
+        String timeStamp = DateFormat.getInstance().format(new Date());
+        messageField.appendText(timeStamp);
+        messageField.appendText(System.lineSeparator());
+        messageField.appendText(message);
+        messageField.appendText(System.lineSeparator());
         messageField.appendText(System.lineSeparator());
     }
 
-    private void showErrorLengthAlert() {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText("The length of message can't be zero");
-        alert.show();
+    public void appendServerMessage(String serverMessage) {
+        messageField.appendText(serverMessage);
+        messageField.appendText(System.lineSeparator());
+        messageField.appendText(System.lineSeparator());
     }
 
-    @FXML
-    void initialize() {
-        assert About != null : "fx:id=\"About\" was not injected: check your FXML file 'primary.fxml'.";
-        assert Enter != null : "fx:id=\"Enter\" was not injected: check your FXML file 'primary.fxml'.";
-        assert File != null : "fx:id=\"File\" was not injected: check your FXML file 'primary.fxml'.";
-        assert Help != null : "fx:id=\"Help\" was not injected: check your FXML file 'primary.fxml'.";
-        assert addUserButton != null : "fx:id=\"addUserButton\" was not injected: check your FXML file 'primary.fxml'.";
-        assert clearAllButton != null : "fx:id=\"clearAllButton\" was not injected: check your FXML file 'primary.fxml'.";
-        assert messageField != null : "fx:id=\"messageField\" was not injected: check your FXML file 'primary.fxml'.";
-        assert textField != null : "fx:id=\"textField\" was not injected: check your FXML file 'primary.fxml'.";
-        assert userField != null : "fx:id=\"userField\" was not injected: check your FXML file 'primary.fxml'.";
+
+    public void setUsernameTitle (String username){
+        userNameField.setText(username);
+    }
+    public void setAddUsersOnline(String userOnline) {
+        if(!userField.getItems().contains(userOnline))
+       userField.getItems().add(userOnline);
+    }
+    public void setRemoveUserOnline (String userOnline){
+        userField.getItems().remove(userOnline);
     }
 }

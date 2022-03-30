@@ -4,7 +4,10 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.example.controllers.AuthController;
 import org.example.controllers.PrimaryController;
 import org.example.models.Network;
 
@@ -19,26 +22,65 @@ import java.net.Socket;
 public class App extends Application {
 
     private static Scene scene;
+    private Network network;
+    private Stage stage;
+    private Stage authStage;
+    private PrimaryController primaryController;
 
     @Override
     public void start(Stage stage) throws IOException {
+        network = new Network();
+        network.connect();
+        this.stage = stage;
+
+
+       openAuthDialog();
+       createChatDialog();
+    }
+
+    private void openAuthDialog() throws IOException {
+        FXMLLoader authLoader = new FXMLLoader(App.class.getResource("auth-view.fxml"));
+        authStage = new Stage();
+        scene = new Scene(authLoader.load());
+        authStage.setScene(scene);
+        authStage.setTitle("Authentication");
+        authStage.initModality(Modality.WINDOW_MODAL);
+        authStage.initOwner(stage);
+        authStage.show();
+
+        AuthController primaryController = authLoader.getController();
+        primaryController.setNetwork(network);
+        primaryController.setStartClient(this);
+    }
+
+    private void createChatDialog() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("primary.fxml"));
         scene = new Scene(fxmlLoader.load(), 640, 480);
         stage.setScene(scene);
-        stage.show();
-
-        Network network = new Network();
-
-        PrimaryController primaryController = fxmlLoader.getController();
+        primaryController = fxmlLoader.getController();
         primaryController.setNetwork(network);
 
-        network.connect();
-        network.waitMessage(primaryController);
-
     }
-
     public static void main(String[] args) {
         launch();
     }
+
+    public void openChatDialog() {
+        authStage.close();
+        stage.show();
+        stage.setTitle(network.getUsername());
+        network.waitMessage(primaryController);
+        primaryController.setUsernameTitle(network.getUsername());
+    }
+    public void errorAlert(String titleAlert, String headerAlert){
+        Alert alert = new Alert (Alert.AlertType.ERROR);
+        alert.setTitle(titleAlert);
+        alert.setHeaderText(headerAlert);
+
+        alert.show();
+    }
+
+
+
 
 }

@@ -1,5 +1,6 @@
 package org.example.server;
 
+import org.example.Error;
 import org.example.server.authentication.AuthenticationService;
 import org.example.server.authentication.BaseAuthentication;
 import org.example.server.handler.ClientHandler;
@@ -22,12 +23,18 @@ public class MyServer {
         clients = new ArrayList<>();
     }
 
-    public synchronized void subscribe(ClientHandler clientHandler) {
+    public synchronized void subscribe(ClientHandler clientHandler) throws IOException {
         clients.add(clientHandler);
+        for(ClientHandler client : clients)
+        client.sendAddUserOnlineList(clients);
     }
 
-    public synchronized void unSubscribe(ClientHandler clientHandler) {
+    public synchronized void unSubscribe(ClientHandler clientHandler) throws IOException {
         clients.remove(clientHandler);
+        for(ClientHandler client: clients)
+        client.sendRemoveUser(clientHandler);
+
+        clientHandler.sendMessage(null,clientHandler.getUsername()+" отключился");
     }
 
 
@@ -69,13 +76,16 @@ public class MyServer {
         return authenticationService;
     }
 
-    public synchronized void broadcastMessage(String message, ClientHandler sender) throws IOException {
+    public synchronized void broadcastMessage(String message, ClientHandler sender, boolean isServerMessage) throws IOException {
         for (ClientHandler client: clients) {
             if(client == sender){
                 continue;
             }
-            client.sendMessage(sender.getUsername(),message);
+            client.sendMessage(isServerMessage ? null: sender.getUsername(),message);
         }
+    }
+    public synchronized void broadcastMessage(String message, ClientHandler sender) throws IOException {
+       broadcastMessage(message,sender,false);
     }
     public synchronized void broadcastPrivateMessage(String message, ClientHandler sender) throws IOException {
         String[] parts = message.split("\\s+");
@@ -83,8 +93,9 @@ public class MyServer {
         String textMessage = parts[2];
         for (ClientHandler client: clients) {
             if(client.getUsername().equals(recipient)) {
-                client.sendPrivateMessage(sender.getUsername(), textMessage);
+                client.sendMessage(sender.getUsername(), textMessage);
             }
         }
     }
+
 }
