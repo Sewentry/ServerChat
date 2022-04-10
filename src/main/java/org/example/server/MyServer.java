@@ -3,6 +3,7 @@ package org.example.server;
 import org.example.Error;
 import org.example.server.authentication.AuthenticationService;
 import org.example.server.authentication.BaseAuthentication;
+import org.example.server.authentication.DBAuthentification;
 import org.example.server.handler.ClientHandler;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class MyServer {
 
     public MyServer(int port) throws IOException {
         serverSocket = new ServerSocket(port);
-        authenticationService = new BaseAuthentication();
+        authenticationService = new DBAuthentification();
         clients = new ArrayList<>();
     }
 
@@ -41,13 +42,16 @@ public class MyServer {
     public void start(){
         System.out.println("Сервер запущен");
         System.out.println("----------------");
-
+        authenticationService.startAuthentication();
         try {
             while (true){
                 waitAndProcessNewClientConnection();
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        finally {
+            authenticationService.endAuthentication();
         }
     }
 

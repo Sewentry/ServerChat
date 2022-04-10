@@ -8,6 +8,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class ClientHandler {
         }).start();
     }
 
-    private void authentication() throws IOException {
+    private void authentication() throws IOException, SQLException {
           while (true){
               String message = in.readUTF();
               if(message.startsWith(Error.AUTH_CMD_PREFIX.getText())){
@@ -77,7 +78,7 @@ public class ClientHandler {
 
     }
 
-    private boolean processAuthentication(String message) throws IOException {
+    private boolean processAuthentication(String message) throws IOException, SQLException {
         String[] parts = message.split("\\s+");
         if(parts.length !=3){
             out.writeUTF(Error.AUTHERR_CMD_PREFIX.getText() + " ошибка аутентификации");
