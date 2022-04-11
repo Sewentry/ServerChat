@@ -10,7 +10,9 @@ public enum Error {
     STOP_SERVER_CMD_PREFIX ("/stop"),
     SERVER_ADD_USER_ONLINE_PREFIX("/userADD"),
     SERVER_REMOVE_USER_ONLINE_PREFIX("/userREMOVE"),
+    SERVER_CHANGE_USERNAME_PREFIX("/usernameChange"),
     END_CLIENT_CMD_PREFIX ("/end");
+
 
 
     String currency;

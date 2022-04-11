@@ -22,6 +22,7 @@ public class ClientHandler {
     private DataOutputStream out;
     private String username;
 
+
     public ClientHandler(MyServer myServer, Socket socket) {
 
         this.myServer = myServer;
@@ -61,7 +62,7 @@ public class ClientHandler {
           }
     }
 
-    private void readMessage() throws IOException {
+    private void readMessage() throws IOException, SQLException {
         while (true){
             String message = in.readUTF();
             System.out.println("message |" + username + ": "+ message);
@@ -71,7 +72,10 @@ public class ClientHandler {
                 return;
             }else if(message.startsWith(Error.PRIVAT_MSG_CMD_PREFIX.getText())){
                 myServer.broadcastPrivateMessage(message,this);
-            }else{
+            }else if(message.startsWith(Error.SERVER_CHANGE_USERNAME_PREFIX.getText())){
+               myServer.changeUsername(message,this);
+            }
+            else{
                 myServer.broadcastMessage(message,this);
             }
         }
@@ -89,6 +93,7 @@ public class ClientHandler {
         AuthenticationService auth = myServer.getAuthenticationService();
 
         username = auth.getUsernameByLoginAndPassword(login,password);
+
 
         if(username!=null){
             if(myServer.isUsernameBusy(username)) {
@@ -125,5 +130,14 @@ public class ClientHandler {
 
     public void sendRemoveUser(ClientHandler client) throws IOException {
             out.writeUTF(String.format("%s %s", Error.SERVER_REMOVE_USER_ONLINE_PREFIX.getText(), client.getUsername()));
+    }
+
+    public void sendNewUsername(ClientHandler client, String username) throws IOException {
+        out.writeUTF(String.format("%s %s %s", Error.SERVER_CHANGE_USERNAME_PREFIX.getText(),client.getUsername(), username));
+        myServer.broadcastMessage(String.format(">>> %s сменил ник на %s", client.getUsername(),username),this,true);
+    }
+
+    public void setUsername(String newUsername) {
+        this.username = newUsername;
     }
 }

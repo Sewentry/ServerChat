@@ -84,6 +84,11 @@ public class Network {
                         String[] parts = message.split("\\s+", 2);
                         String userOnline = parts[1];
                         Platform.runLater(() -> primaryController.setRemoveUserOnline(userOnline));
+                    } else if (message.startsWith(Error.SERVER_CHANGE_USERNAME_PREFIX.getText())){
+                        String[] parts = message.split("\\s+", 3);
+                        String oldUsername = parts[1];
+                        String newUsername = parts[2];
+                        Platform.runLater(() -> primaryController.changeUsersOnlineList(oldUsername, newUsername));
                     }
                 }
             }catch (IOException e){
@@ -93,7 +98,9 @@ public class Network {
         t1.setDaemon(true);
         t1.start();
     }
-
+    public void sendNewUsername(String username) throws IOException {
+        out.writeUTF(String.format("%s %s", Error.SERVER_CHANGE_USERNAME_PREFIX.getText(), username));
+    }
 
     public String sendAuthMessage(String login, String password) {
         try {

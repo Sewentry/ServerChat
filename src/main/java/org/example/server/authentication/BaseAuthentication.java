@@ -3,6 +3,7 @@ package org.example.server.authentication;
 import org.example.App;
 import org.example.server.models.User;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class BaseAuthentication implements AuthenticationService {
@@ -22,6 +23,11 @@ public class BaseAuthentication implements AuthenticationService {
         }
         return null;
 
+
+    }
+
+    @Override
+    public void changeUsername(String login, String username) throws SQLException {
 
     }
 

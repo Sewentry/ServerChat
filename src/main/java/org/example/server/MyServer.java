@@ -9,6 +9,7 @@ import org.example.server.handler.ClientHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,6 @@ public class MyServer {
         clients.remove(clientHandler);
         for(ClientHandler client: clients)
         client.sendRemoveUser(clientHandler);
-
         clientHandler.sendMessage(null,clientHandler.getUsername()+" отключился");
     }
 
@@ -101,5 +101,15 @@ public class MyServer {
             }
         }
     }
-
+    public synchronized void changeUsername(String message, ClientHandler sender) throws SQLException, IOException {
+        String [] parts = message.split("\\s+");
+        String newUsername = parts[1];
+        authenticationService.changeUsername(sender.getUsername(), newUsername);
+        for (ClientHandler client: clients) {
+            client.sendNewUsername(sender, newUsername);
+        }
+        sender.setUsername(newUsername);
+    }
 }
+
+

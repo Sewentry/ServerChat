@@ -29,6 +29,11 @@ public class DBAuthentification implements AuthenticationService {
     }
 
     @Override
+    public void changeUsername (String login, String username) throws SQLException {
+        stmt.executeUpdate(String.format("UPDATE auth SET username = '%s' WHERE username = '%s'", username, login));
+    }
+
+    @Override
     public void startAuthentication()
     {
         try {

@@ -1,6 +1,8 @@
 package org.example.controllers;
 
 import javafx.fxml.FXML;
+
+import java.io.IOException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
@@ -17,7 +19,8 @@ public class PrimaryController {
 
     @FXML
     private URL location;
-
+    @FXML
+    private Button changeUsername;
     @FXML
     private Button Enter;
 
@@ -28,8 +31,6 @@ public class PrimaryController {
     private Menu Help;
     @FXML
     private MenuItem About;
-    @FXML
-    private Button addUserButton;
 
     @FXML
     private Button clearAllButton;
@@ -60,7 +61,6 @@ public class PrimaryController {
         assert Enter != null : "fx:id=\"Enter\" was not injected: check your FXML file 'primary.fxml'.";
         assert File != null : "fx:id=\"File\" was not injected: check your FXML file 'primary.fxml'.";
         assert Help != null : "fx:id=\"Help\" was not injected: check your FXML file 'primary.fxml'.";
-        assert addUserButton != null : "fx:id=\"addUserButton\" was not injected: check your FXML file 'primary.fxml'.";
         assert clearAllButton != null : "fx:id=\"clearAllButton\" was not injected: check your FXML file 'primary.fxml'.";
         assert messageField != null : "fx:id=\"messageField\" was not injected: check your FXML file 'primary.fxml'.";
         assert textField != null : "fx:id=\"textField\" was not injected: check your FXML file 'primary.fxml'.";
@@ -126,6 +126,17 @@ public class PrimaryController {
             appendMessage("Я: " + message);
 
         textField.clear();
+    }
+    @FXML
+    public void changeUsername () throws IOException {
+        String username = textField.getText();
+        network.sendNewUsername(username);
+        textField.clear();
+        userNameField.setText(username);
+    }
+    public void changeUsersOnlineList(String oldUser, String newUser){
+        userField.getItems().remove(oldUser);
+        userField.getItems().add(newUser);
     }
 
 
