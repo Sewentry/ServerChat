@@ -59,12 +59,11 @@ public class ClientHandler {
 
     private  void registration(String message) throws IOException, SQLException {
         while (true){
-            if(message.startsWith(Error.REGISTER_CMD_PREFIX.getText())){
                 boolean isSuccessRegister = processRegister(message);
                 if(isSuccessRegister){
                     break;
                 }
-            }else{
+                else{
                 out.writeUTF(Error.REGISERERR_CMD_PREFIX.getText()+" ошибка регистрации");
                 System.out.println("неудачная попытка регистрации");
             }
@@ -73,12 +72,12 @@ public class ClientHandler {
 
     private  void authentication(String message) throws IOException, SQLException {
           while (true){
-              if(message.startsWith(Error.AUTH_CMD_PREFIX.getText())){
+
                   boolean isSuccessAuth = processAuthentication(message);
                   if(isSuccessAuth){
                       break;
                   }
-              }else{
+              else{
                   out.writeUTF(Error.AUTH_CMD_PREFIX.getText()+" ошибка аутентификации");
                   System.out.println("неудачная попытка аутентификации");
               }
