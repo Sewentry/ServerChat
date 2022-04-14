@@ -7,24 +7,31 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="201.0" prefWidth="292.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.AuthController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="233.0" prefWidth="292.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.RegisterController">
    <children>
       <Label alignment="CENTER" layoutX="23.0" layoutY="47.0" prefHeight="25.0" prefWidth="39.0" text="Login">
          <font>
             <Font size="14.0" />
-         </font></Label>
+         </font>
+      </Label>
       <Label layoutX="13.0" layoutY="104.0" text="Password">
          <font>
             <Font size="14.0" />
-         </font></Label>
-      <Label layoutX="108.0" layoutY="14.0" text="Authentication">
+         </font>
+      </Label>
+      <Label layoutX="108.0" layoutY="14.0" text="Registration">
          <font>
             <Font size="14.0" />
          </font>
       </Label>
       <TextField fx:id="loginField" layoutX="95.0" layoutY="52.0" />
       <PasswordField fx:id="passwordField" layoutX="95.0" layoutY="101.0" />
-      <Button fx:id="signIn" layoutX="112.0" layoutY="162.0" mnemonicParsing="false" onAction="#checkAuth" prefHeight="25.0" prefWidth="68.0" text="Sign in" />
-      <Button fx:id="addNewAccountButton" layoutX="210.0" layoutY="162.0" mnemonicParsing="false" onAction="#addNewAccountButton" prefHeight="25.0" prefWidth="68.0" text="Register" />
+      <Button fx:id="register" layoutX="112.0" layoutY="194.0" mnemonicParsing="false" onAction="#register" prefHeight="25.0" prefWidth="68.0" text="Register" />
+      <Label fx:id="username" layoutX="13.0" layoutY="153.0" text="Username">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <PasswordField fx:id="usernameField" layoutX="95.0" layoutY="151.0" />
    </children>
 </Pane>

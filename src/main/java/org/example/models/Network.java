@@ -117,6 +117,21 @@ public class Network {
             return e.getMessage();
         }
     }
+    public String sendRegisterMessage(String login, String password, String username) {
+        try {
+            out.writeUTF(String.format("%s %s %s %s", Error.REGISTER_CMD_PREFIX.getText(),login,password,username));
+            String response = in.readUTF();
+            if(response.startsWith(Error.REGISTEROK_CMD_PREFIX.getText())){
+                this.username = response.split("\\s+", 2)[1];
+                return null;
+            }else {
+                return response.split("\\s+", 2)[1];
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+    }
 
     public String getUsername() {
         return username;

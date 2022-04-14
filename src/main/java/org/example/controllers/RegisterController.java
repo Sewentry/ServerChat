@@ -1,18 +1,14 @@
 package org.example.controllers;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import org.example.App;
-import org.example.Error;
 import org.example.models.Network;
 
-
-
-public class AuthController {
+public class RegisterController {
     private Network network;
     private App startClient;
 
@@ -22,31 +18,31 @@ public class AuthController {
     @FXML
     private PasswordField passwordField;
 
+    @FXML
+    private Button register;
 
     @FXML
-    private Button signIn;
+    private Label username;
 
     @FXML
-    void addNewAccountButton() {
-        startClient.openRegDialog();
-    }
+    private PasswordField usernameField;
+
     @FXML
-    public void checkAuth() {
+    void register() {
         String login = loginField.getText().trim();
         String password = passwordField.getText().trim();
-        if(login.length()==0 || password.length()==0){
-           startClient.errorAlert("emptyAlert","Login or password are empty");
-           return;
+        String username = usernameField.getText().trim();
+        if(login.length()==0 || password.length()==0 || username.length()==0){
+            startClient.errorAlert("emptyAlert","Login or password or username are empty");
+            return;
         }
-
-        String authErrorMessage = network.sendAuthMessage(login,password);
-        if(authErrorMessage==null){
+        String registerErrorMessage = network.sendRegisterMessage(login,password,username);
+        if(registerErrorMessage==null){
             startClient.openChatDialog();
         }else  {
-            startClient.errorAlert("wrong date",authErrorMessage);
+            startClient.errorAlert("wrong date",registerErrorMessage);
         }
     }
-
 
     public void setNetwork(Network network) {
         this.network = network;
@@ -55,4 +51,5 @@ public class AuthController {
     public void setStartClient(App startClient) {
         this.startClient = startClient;
     }
+
 }

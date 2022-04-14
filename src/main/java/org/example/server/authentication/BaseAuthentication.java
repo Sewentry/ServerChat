@@ -40,4 +40,14 @@ public class BaseAuthentication implements AuthenticationService {
     public void endAuthentication() {
         System.out.println("Конец аутентификации");
     }
+
+    @Override
+    public Boolean checkLoginByFree(String login) {
+        return null;
+    }
+
+    @Override
+    public void createUser(String login, String password, String username) {
+
+    }
 }

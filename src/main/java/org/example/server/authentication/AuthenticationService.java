@@ -9,6 +9,9 @@ public interface AuthenticationService {
     void changeUsername(String login, String username) throws SQLException;
     void startAuthentication();
     void endAuthentication();
+    Boolean checkLoginByFree(String login);
+    void createUser(String login, String password, String username);
+
 
 
 

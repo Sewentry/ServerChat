@@ -34,6 +34,43 @@ public class DBAuthentification implements AuthenticationService {
     }
 
     @Override
+    public void createUser(String login, String password, String username) {
+        try {
+            PreparedStatement pstmt = connection.prepareStatement("INSERT INTO auth (login, password, username) VALUES (?, ?, ?)");
+
+            pstmt.setString(1, login);
+            pstmt.setString(2, password);
+            pstmt.setString(3, username);
+
+            pstmt.addBatch();
+
+            pstmt.executeBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Boolean checkLoginByFree(String login) {
+        String username = null;
+        try {
+            PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM auth WHERE login = ?");
+            pstmt.setString(1, login);
+            rs = pstmt.executeQuery();
+            if (rs.isClosed()) {
+                return true;
+            }
+
+            username = rs.getString("username");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return username == null;
+    }
+
+
+    @Override
     public void startAuthentication()
     {
         try {

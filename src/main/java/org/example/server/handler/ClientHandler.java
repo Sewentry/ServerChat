@@ -35,7 +35,7 @@ public class ClientHandler {
 
         new Thread(()->{
             try {
-                authentication();
+                checkAuthOrRegister();
                 readMessage();
             } catch (Exception e) {
                 try {
@@ -46,10 +46,33 @@ public class ClientHandler {
             }
         }).start();
     }
+    private void checkAuthOrRegister() throws SQLException, IOException {
+        while (true){
+            String message = in.readUTF();
+            if(message.startsWith(Error.REGISTER_CMD_PREFIX.getText())){
+                registration(message);
+            }else if(message.startsWith(Error.AUTH_CMD_PREFIX.getText())){
+                authentication(message);
+            }
+        }
+    }
 
-    private void authentication() throws IOException, SQLException {
+    private  void registration(String message) throws IOException, SQLException {
+        while (true){
+            if(message.startsWith(Error.REGISTER_CMD_PREFIX.getText())){
+                boolean isSuccessRegister = processRegister(message);
+                if(isSuccessRegister){
+                    break;
+                }
+            }else{
+                out.writeUTF(Error.REGISERERR_CMD_PREFIX.getText()+" ошибка регистрации");
+                System.out.println("неудачная попытка регистрации");
+            }
+        }
+    }
+
+    private  void authentication(String message) throws IOException, SQLException {
           while (true){
-              String message = in.readUTF();
               if(message.startsWith(Error.AUTH_CMD_PREFIX.getText())){
                   boolean isSuccessAuth = processAuthentication(message);
                   if(isSuccessAuth){
@@ -107,6 +130,29 @@ public class ClientHandler {
             return true;
         }else{
             out.writeUTF(Error.AUTH_CMD_PREFIX.getText()+" Логин или пароль не найдены");
+            return false;
+        }
+    }
+
+    private boolean processRegister(String message) throws IOException {
+        String[] parts = message.split("\\s+");
+        if(parts.length !=4){
+            out.writeUTF(Error.REGISERERR_CMD_PREFIX.getText() + " ошибка регистрации");
+        }
+        String login = parts[1];
+        String password = parts[2];
+        username = parts[3];
+
+        AuthenticationService reg = myServer.getAuthenticationService();
+        if(reg.checkLoginByFree(login)){
+            reg.createUser(login,password,username);
+            out.writeUTF(Error.REGISTEROK_CMD_PREFIX.getText()+" "+username);
+            myServer.subscribe(this);
+            System.out.println("Client: |" + username + ": подключился к чату");
+            myServer.broadcastMessage(String.format(">>> %s присоединился к чату", username),this,true);
+            return true;
+        }else{
+            out.writeUTF(Error.REGISERERR_CMD_PREFIX.getText()+"логин уже используется");
             return false;
         }
     }

@@ -9,6 +9,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.example.controllers.AuthController;
 import org.example.controllers.PrimaryController;
+import org.example.controllers.RegisterController;
 import org.example.models.Network;
 
 import java.io.DataInputStream;
@@ -25,7 +26,9 @@ public class App extends Application {
     private Network network;
     private Stage stage;
     private Stage authStage;
+    private Stage registerStage;
     private PrimaryController primaryController;
+    private RegisterController registerController;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -35,7 +38,9 @@ public class App extends Application {
 
 
        openAuthDialog();
+       createRegDialog();
        createChatDialog();
+
     }
 
     private void openAuthDialog() throws IOException {
@@ -55,18 +60,34 @@ public class App extends Application {
 
     private void createChatDialog() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("primary.fxml"));
-        scene = new Scene(fxmlLoader.load(), 640, 480);
+        scene = new Scene(fxmlLoader.load(),640, 480);
         stage.setScene(scene);
         primaryController = fxmlLoader.getController();
         primaryController.setNetwork(network);
 
     }
+    private void createRegDialog() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("reg-view.fxml"));
+        registerStage = new Stage();
+        scene = new Scene(fxmlLoader.load());
+        registerStage.setScene(scene);
+        RegisterController primaryController = fxmlLoader.getController();
+        primaryController.setNetwork(network);
+        primaryController.setStartClient(this);
+
+    }
     public static void main(String[] args) {
         launch();
     }
-
+    public void openRegDialog(){
+        authStage.close();
+        registerStage.show();
+        registerStage.setTitle("Registration");
+    }
     public void openChatDialog() {
         authStage.close();
+        registerStage.close();
+
         stage.show();
         stage.setTitle(network.getUsername());
         network.waitMessage(primaryController);
