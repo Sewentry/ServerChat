@@ -51,8 +51,10 @@ public class ClientHandler {
             String message = in.readUTF();
             if(message.startsWith(Error.REGISTER_CMD_PREFIX.getText())){
                 registration(message);
+                break;
             }else if(message.startsWith(Error.AUTH_CMD_PREFIX.getText())){
                 authentication(message);
+                break;
             }
         }
     }
