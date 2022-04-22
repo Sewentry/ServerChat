@@ -4,9 +4,18 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.example.controllers.AuthController;
+import org.example.controllers.PrimaryController;
+import org.example.controllers.RegisterController;
+import org.example.models.Network;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 
 /**
  * JavaFX App
@@ -14,25 +23,85 @@ import java.io.IOException;
 public class App extends Application {
 
     private static Scene scene;
+    private Network network;
+    private Stage stage;
+    private Stage authStage;
+    private Stage registerStage;
+    private PrimaryController primaryController;
+    private RegisterController registerController;
 
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"), 640, 480);
+        network = new Network();
+        network.connect();
+        this.stage = stage;
+
+
+       openAuthDialog();
+       createRegDialog();
+       createChatDialog();
+
+    }
+
+    private void openAuthDialog() throws IOException {
+        FXMLLoader authLoader = new FXMLLoader(App.class.getResource("auth-view.fxml"));
+        authStage = new Stage();
+        scene = new Scene(authLoader.load());
+        authStage.setScene(scene);
+        authStage.setTitle("Authentication");
+        authStage.initModality(Modality.WINDOW_MODAL);
+        authStage.initOwner(stage);
+        authStage.show();
+
+        AuthController primaryController = authLoader.getController();
+        primaryController.setNetwork(network);
+        primaryController.setStartClient(this);
+    }
+
+    private void createChatDialog() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("primary.fxml"));
+        scene = new Scene(fxmlLoader.load(),640, 480);
         stage.setScene(scene);
-        stage.show();
-    }
+        primaryController = fxmlLoader.getController();
+        primaryController.setNetwork(network);
 
-    static void setRoot(String fxml) throws IOException {
-        scene.setRoot(loadFXML(fxml));
     }
+    private void createRegDialog() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("reg-view.fxml"));
+        registerStage = new Stage();
+        scene = new Scene(fxmlLoader.load());
+        registerStage.setScene(scene);
+        RegisterController primaryController = fxmlLoader.getController();
+        primaryController.setNetwork(network);
+        primaryController.setStartClient(this);
 
-    private static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
-        return fxmlLoader.load();
     }
-
     public static void main(String[] args) {
         launch();
     }
+    public void openRegDialog(){
+        authStage.close();
+        registerStage.show();
+        registerStage.setTitle("Registration");
+    }
+    public void openChatDialog() {
+        authStage.close();
+        registerStage.close();
+
+        stage.show();
+        stage.setTitle(network.getUsername());
+        network.waitMessage(primaryController);
+        primaryController.setUsernameTitle(network.getUsername());
+    }
+    public void errorAlert(String titleAlert, String headerAlert){
+        Alert alert = new Alert (Alert.AlertType.ERROR);
+        alert.setTitle(titleAlert);
+        alert.setHeaderText(headerAlert);
+
+        alert.show();
+    }
+
+
+
 
 }
