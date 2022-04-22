@@ -1,22 +1,24 @@
 package org.example.server;
 
-import org.example.Error;
 import org.example.server.authentication.AuthenticationService;
-import org.example.server.authentication.BaseAuthentication;
 import org.example.server.authentication.DBAuthentification;
 import org.example.server.handler.ClientHandler;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 
 public class MyServer {
     private final ServerSocket serverSocket;
     private final AuthenticationService authenticationService;
     private final List<ClientHandler> clients;
+    private File chatHistory = new File("src/main/resources/org/example/history.txt");
+
 
 
     public MyServer(int port) throws IOException {
@@ -39,7 +41,7 @@ public class MyServer {
     }
 
 
-    public void start(){
+    public void start() throws IOException {
         System.out.println("Сервер запущен");
         System.out.println("----------------");
         authenticationService.startAuthentication();
@@ -88,8 +90,16 @@ public class MyServer {
             client.sendMessage(isServerMessage ? null: sender.getUsername(),message);
         }
     }
+
+    private synchronized void writeMessageInToHistory(String message, String sender) throws IOException {
+       try (BufferedWriter writer = new BufferedWriter(new FileWriter(chatHistory,true))) {
+           writer.write(String.format("%s: %s",sender,message+"\n"));
+           }
+    }
+
     public synchronized void broadcastMessage(String message, ClientHandler sender) throws IOException {
        broadcastMessage(message,sender,false);
+        writeMessageInToHistory(message,sender.getUsername());
     }
     public synchronized void broadcastPrivateMessage(String message, ClientHandler sender) throws IOException {
         String[] parts = message.split("\\s+");

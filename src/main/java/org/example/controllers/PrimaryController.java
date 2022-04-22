@@ -2,7 +2,10 @@ package org.example.controllers;
 
 import javafx.fxml.FXML;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
@@ -11,6 +14,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import org.example.models.Network;
+import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class PrimaryController {
 
@@ -54,6 +58,8 @@ public class PrimaryController {
     public void setNetwork(Network network) {
         this.network = network;
     }
+    private File chatHistory = new File("src/main/resources/org/example/history.txt");
+    private final static int NUM_LAST_LINE_TO_READ = 5;
 
     @FXML
     void initialize() {
@@ -166,4 +172,28 @@ public class PrimaryController {
     public void setRemoveUserOnline (String userOnline){
         userField.getItems().remove(userOnline);
     }
+    public void downloadPreviousMessages(){
+        Stack<String> stackMessageStore = new Stack<>();
+        try (ReversedLinesFileReader reader =new ReversedLinesFileReader(chatHistory))
+        {
+            String line = "";
+            while((line=reader.readLine())!= null && NUM_LAST_LINE_TO_READ>stackMessageStore.size()) {
+                stackMessageStore.push(line);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        takeOutMessageStore(stackMessageStore);
+    }
+
+    private void takeOutMessageStore(Stack<String> stackMessageStore) {
+        while (stackMessageStore.size()>0){
+            messageField.appendText(stackMessageStore.pop());
+            messageField.appendText(System.lineSeparator());
+        }
+    }
 }
+
+

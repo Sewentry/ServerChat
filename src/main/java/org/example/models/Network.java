@@ -10,6 +10,7 @@ import org.example.server.handler.ClientHandler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
@@ -22,7 +23,8 @@ public class Network {
     public static final int DEFAULT_PORT =8188;
     private DataOutputStream out;
     private DataInputStream in;
-
+    private File localHistory;
+    private String filename;
     private final String host;
     private final int port;
     private String username;
@@ -59,6 +61,7 @@ public class Network {
             System.out.println("Сообщение не отправлено!");
         }
     }
+
     public void sendPrivateMessage(String selectedRecipient, String message) {
         sendMessage(String.format("%s %s %s", Error.PRIVAT_MSG_CMD_PREFIX.getText(), selectedRecipient, message));
     }
@@ -80,6 +83,7 @@ public class Network {
                         String[] parts = message.split("\\s+", 2);
                         String userOnline = parts[1];
                         Platform.runLater(() -> primaryController.setAddUsersOnline(userOnline));
+                        Platform.runLater(() ->primaryController.downloadPreviousMessages());
                     } else if (message.startsWith(Error.SERVER_REMOVE_USER_ONLINE_PREFIX.getText())) {
                         String[] parts = message.split("\\s+", 2);
                         String userOnline = parts[1];
