@@ -1,23 +1,28 @@
 package org.example.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.server.authentication.AuthenticationService;
 import org.example.server.authentication.DBAuthentification;
 import org.example.server.handler.ClientHandler;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 
 public class MyServer {
     private final ServerSocket serverSocket;
     private final AuthenticationService authenticationService;
     private final List<ClientHandler> clients;
     private File chatHistory = new File("src/main/resources/org/example/history.txt");
+    private final static Logger info = LogManager.getLogger("Process");
+    private final static Logger errors = LogManager.getLogger("Error");
 
 
 
@@ -44,6 +49,7 @@ public class MyServer {
     public void start() throws IOException {
         System.out.println("Сервер запущен");
         System.out.println("----------------");
+        info.info("Server Start");
         authenticationService.startAuthentication();
         try {
             while (true){

@@ -1,20 +1,13 @@
 package org.example.models;
 
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ListView;
-import javafx.scene.shape.StrokeLineCap;
 import org.example.Error;
 import org.example.controllers.PrimaryController;
-import org.example.server.handler.ClientHandler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.List;
-import java.util.SplittableRandom;
 
 public class Network {
 
@@ -23,8 +16,6 @@ public class Network {
     public static final int DEFAULT_PORT =8188;
     private DataOutputStream out;
     private DataInputStream in;
-    private File localHistory;
-    private String filename;
     private final String host;
     private final int port;
     private String username;
@@ -83,7 +74,6 @@ public class Network {
                         String[] parts = message.split("\\s+", 2);
                         String userOnline = parts[1];
                         Platform.runLater(() -> primaryController.setAddUsersOnline(userOnline));
-                        Platform.runLater(() ->primaryController.downloadPreviousMessages());
                     } else if (message.startsWith(Error.SERVER_REMOVE_USER_ONLINE_PREFIX.getText())) {
                         String[] parts = message.split("\\s+", 2);
                         String userOnline = parts[1];

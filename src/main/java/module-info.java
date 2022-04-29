@@ -4,6 +4,8 @@ module org.example {
     requires lombok;
     requires java.sql;
     requires org.apache.commons.io;
+    requires org.apache.logging.log4j;
+
 
     opens org.example to javafx.fxml;
     exports org.example;

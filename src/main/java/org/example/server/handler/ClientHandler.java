@@ -1,16 +1,16 @@
 package org.example.server.handler;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.Error;
-import org.example.server.authentication.AuthenticationService;
 import org.example.server.MyServer;
+import org.example.server.authentication.AuthenticationService;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ClientHandler {
@@ -22,6 +22,8 @@ public class ClientHandler {
     private DataInputStream in;
     private DataOutputStream out;
     private String username;
+    private final static Logger errors = LogManager.getLogger("Error");
+    private final static Logger info = LogManager.getLogger("Process");
 
 
     public ClientHandler(MyServer myServer, Socket socket) {
@@ -42,7 +44,7 @@ public class ClientHandler {
                 try {
                     myServer.unSubscribe(this);
                 } catch (IOException ioException) {
-                    ioException.printStackTrace();
+                    errors.error("Error"+ioException);
                 }
             }
         }).start();
@@ -51,40 +53,33 @@ public class ClientHandler {
         while (true){
             String message = in.readUTF();
             if(message.startsWith(Error.REGISTER_CMD_PREFIX.getText())){
-                registration(message);
-                break;
-            }else if(message.startsWith(Error.AUTH_CMD_PREFIX.getText())){
-                authentication(message);
-                break;
-            }
-        }
-    }
-
-    private  void registration(String message) throws IOException, SQLException {
-        while (true){
                 boolean isSuccessRegister = processRegister(message);
                 if(isSuccessRegister){
                     break;
                 }
                 else{
-                out.writeUTF(Error.REGISERERR_CMD_PREFIX.getText()+" ошибка регистрации");
-                System.out.println("неудачная попытка регистрации");
+
+                    info.info("Неудачная попытка регистрации");
+                }
+            }else if(message.startsWith(Error.AUTH_CMD_PREFIX.getText())){
+                boolean isSuccessAuth = processAuthentication(message);
+                if(isSuccessAuth){
+                    break;
+                }
+                else{
+
+                    info.info("Неудачная попытка авторизации");
+                }
             }
         }
     }
 
-    private  void authentication(String message) throws IOException, SQLException {
-          while (true){
+    private void registration(String message) throws IOException{
 
-                  boolean isSuccessAuth = processAuthentication(message);
-                  if(isSuccessAuth){
-                      break;
-                  }
-              else{
-                  out.writeUTF(Error.AUTH_CMD_PREFIX.getText()+" ошибка аутентификации");
-                  System.out.println("неудачная попытка аутентификации");
-              }
-          }
+    }
+
+    private void authentication(String message) throws IOException, SQLException {
+
     }
 
     private void readMessage() throws IOException, SQLException {
@@ -110,7 +105,7 @@ public class ClientHandler {
     private boolean processAuthentication(String message) throws IOException, SQLException {
         String[] parts = message.split("\\s+");
         if(parts.length !=3){
-            out.writeUTF(Error.AUTHERR_CMD_PREFIX.getText() + " ошибка аутентификации");
+            out.writeUTF(Error.AUTH_CMD_PREFIX.getText() + " ошибка аутентификации");
         }
         String login = parts[1];
         String password = parts[2];

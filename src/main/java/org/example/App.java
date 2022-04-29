@@ -2,7 +2,6 @@ package org.example;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Modality;
@@ -12,10 +11,7 @@ import org.example.controllers.PrimaryController;
 import org.example.controllers.RegisterController;
 import org.example.models.Network;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 
 /**
  * JavaFX App
@@ -92,6 +88,7 @@ public class App extends Application {
         stage.setTitle(network.getUsername());
         network.waitMessage(primaryController);
         primaryController.setUsernameTitle(network.getUsername());
+        primaryController.downloadPreviousMessages();
     }
     public void errorAlert(String titleAlert, String headerAlert){
         Alert alert = new Alert (Alert.AlertType.ERROR);
