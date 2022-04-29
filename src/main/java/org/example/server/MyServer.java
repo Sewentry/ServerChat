@@ -43,13 +43,14 @@ public class MyServer {
         for(ClientHandler client: clients)
         client.sendRemoveUser(clientHandler);
         clientHandler.sendMessage(null,clientHandler.getUsername()+" отключился");
+        info.warn(clientHandler.getUsername()+" отключился");
     }
 
 
     public void start() throws IOException {
-        System.out.println("Сервер запущен");
-        System.out.println("----------------");
-        info.info("Server Start");
+        //System.out.println("Сервер запущен");
+        //System.out.println("----------------");
+        info.warn("Server Start");
         authenticationService.startAuthentication();
         try {
             while (true){
@@ -64,9 +65,9 @@ public class MyServer {
     }
 
     private void waitAndProcessNewClientConnection() throws IOException {
-        System.out.println("Ожидание клиента");
+        info.warn("Waiting client");
         Socket socket = serverSocket.accept();
-        System.out.println("Клиент подключился");
+        info.warn("Client is connected");
 
         processClientConnection(socket);
     }
@@ -105,7 +106,8 @@ public class MyServer {
 
     public synchronized void broadcastMessage(String message, ClientHandler sender) throws IOException {
        broadcastMessage(message,sender,false);
-        writeMessageInToHistory(message,sender.getUsername());
+       writeMessageInToHistory(message,sender.getUsername());
+       info.warn(sender.getUsername()+": send message");
     }
     public synchronized void broadcastPrivateMessage(String message, ClientHandler sender) throws IOException {
         String[] parts = message.split("\\s+");
@@ -116,6 +118,7 @@ public class MyServer {
                 client.sendMessage(sender.getUsername(), textMessage);
             }
         }
+        info.warn(sender.getUsername()+": send message to "+ recipient);
     }
     public synchronized void changeUsername(String message, ClientHandler sender) throws SQLException, IOException {
         String [] parts = message.split("\\s+");
@@ -125,6 +128,7 @@ public class MyServer {
             client.sendNewUsername(sender, newUsername);
         }
         sender.setUsername(newUsername);
+        info.warn(sender.getUsername()+": change Username to "+ newUsername);
     }
 }
 

@@ -59,7 +59,7 @@ public class ClientHandler {
                 }
                 else{
 
-                    info.info("Неудачная попытка регистрации");
+                    info.warn("Неудачная попытка регистрации");
                 }
             }else if(message.startsWith(Error.AUTH_CMD_PREFIX.getText())){
                 boolean isSuccessAuth = processAuthentication(message);
@@ -68,26 +68,20 @@ public class ClientHandler {
                 }
                 else{
 
-                    info.info("Неудачная попытка авторизации");
+                    info.warn("Неудачная попытка авторизации");
                 }
             }
         }
     }
 
-    private void registration(String message) throws IOException{
-
-    }
-
-    private void authentication(String message) throws IOException, SQLException {
-
-    }
 
     private void readMessage() throws IOException, SQLException {
         while (true){
             String message = in.readUTF();
-            System.out.println("message |" + username + ": "+ message);
+            //System.out.println("message |" + username + ": "+ message);
             if(message.startsWith(Error.STOP_SERVER_CMD_PREFIX.getText())){
                 System.exit(0);
+                info.info(username + "send command" + Error.STOP_SERVER_CMD_PREFIX);
             }else if(message.startsWith(Error.END_CLIENT_CMD_PREFIX.getText())){
                 return;
             }else if(message.startsWith(Error.PRIVAT_MSG_CMD_PREFIX.getText())){
@@ -106,6 +100,7 @@ public class ClientHandler {
         String[] parts = message.split("\\s+");
         if(parts.length !=3){
             out.writeUTF(Error.AUTH_CMD_PREFIX.getText() + " ошибка аутентификации");
+            info.warn("ошибка аутентификации");
         }
         String login = parts[1];
         String password = parts[2];
@@ -118,15 +113,18 @@ public class ClientHandler {
         if(username!=null){
             if(myServer.isUsernameBusy(username)) {
                 out.writeUTF(Error.AUTH_CMD_PREFIX.getText() +" Логин уже используется");
+                info.warn("ошибка аутентификации - логин уже используется");
                 return false;
             }
             out.writeUTF(Error.AUTHOK_CMD_PREFIX.getText() + " " + username);
             myServer.subscribe(this);
-            System.out.println("Client: |" + username + ": подключился к чату");
+            //System.out.println("Client: |" + username + ": подключился к чату");
+            info.info("Client: |" + username + ": подключился к чату");
             myServer.broadcastMessage(String.format(">>> %s присоединился к чату", username),this,true);
             return true;
         }else{
             out.writeUTF(Error.AUTH_CMD_PREFIX.getText()+" Логин или пароль не найдены");
+            info.warn("Логин или пароль не найдены");
             return false;
         }
     }
@@ -135,6 +133,7 @@ public class ClientHandler {
         String[] parts = message.split("\\s+");
         if(parts.length !=4){
             out.writeUTF(Error.REGISERERR_CMD_PREFIX.getText() + " ошибка регистрации");
+            info.warn("Ошибка регистрации");
         }
         String login = parts[1];
         String password = parts[2];
@@ -145,11 +144,13 @@ public class ClientHandler {
             reg.createUser(login,password,username);
             out.writeUTF(Error.REGISTEROK_CMD_PREFIX.getText()+" "+username);
             myServer.subscribe(this);
-            System.out.println("Client: |" + username + ": подключился к чату");
+            //System.out.println("Client: |" + username + ": подключился к чату");
+            info.info("Client: |" + username + ": подключился к чату");
             myServer.broadcastMessage(String.format(">>> %s присоединился к чату", username),this,true);
             return true;
         }else{
             out.writeUTF(Error.REGISERERR_CMD_PREFIX.getText()+"логин уже используется");
+            info.warn("логин уже используется");
             return false;
         }
     }
