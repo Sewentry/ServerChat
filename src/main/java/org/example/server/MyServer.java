@@ -1,0 +1,135 @@
+package org.example.server;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.example.server.authentication.AuthenticationService;
+import org.example.server.authentication.DBAuthentification;
+import org.example.server.handler.ClientHandler;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class MyServer {
+    private final ServerSocket serverSocket;
+    private final AuthenticationService authenticationService;
+    private final List<ClientHandler> clients;
+    private File chatHistory = new File("src/main/resources/org/example/history.txt");
+    private final static Logger info = LogManager.getLogger("Process");
+    private final static Logger errors = LogManager.getLogger("Error");
+
+
+
+    public MyServer(int port) throws IOException {
+        serverSocket = new ServerSocket(port);
+        authenticationService = new DBAuthentification();
+        clients = new ArrayList<>();
+    }
+
+    public synchronized void subscribe(ClientHandler clientHandler) throws IOException {
+        clients.add(clientHandler);
+        for(ClientHandler client : clients)
+        client.sendAddUserOnlineList(clients);
+    }
+
+    public synchronized void unSubscribe(ClientHandler clientHandler) throws IOException {
+        clients.remove(clientHandler);
+        for(ClientHandler client: clients)
+        client.sendRemoveUser(clientHandler);
+        clientHandler.sendMessage(null,clientHandler.getUsername()+" отключился");
+        info.warn(clientHandler.getUsername()+" отключился");
+    }
+
+
+    public void start() throws IOException {
+        //System.out.println("Сервер запущен");
+        //System.out.println("----------------");
+        info.warn("Server Start");
+        authenticationService.startAuthentication();
+        try {
+            while (true){
+                waitAndProcessNewClientConnection();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            authenticationService.endAuthentication();
+        }
+    }
+
+    private void waitAndProcessNewClientConnection() throws IOException {
+        info.warn("Waiting client");
+        Socket socket = serverSocket.accept();
+        info.warn("Client is connected");
+
+        processClientConnection(socket);
+    }
+
+    private void processClientConnection(Socket socket) throws IOException {
+        ClientHandler handler = new ClientHandler(this, socket);
+        handler.handler();
+    }
+    public synchronized boolean isUsernameBusy(String username){
+        for(ClientHandler client : clients){
+            if(client.getUsername().equals(username)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public AuthenticationService getAuthenticationService() {
+        return authenticationService;
+    }
+
+    public synchronized void broadcastMessage(String message, ClientHandler sender, boolean isServerMessage) throws IOException {
+        for (ClientHandler client: clients) {
+            if(client == sender){
+                continue;
+            }
+            client.sendMessage(isServerMessage ? null: sender.getUsername(),message);
+        }
+    }
+
+    private synchronized void writeMessageInToHistory(String message, String sender) throws IOException {
+       try (BufferedWriter writer = new BufferedWriter(new FileWriter(chatHistory,true))) {
+           writer.write(String.format("%s: %s",sender,message+"\n"));
+           }
+    }
+
+    public synchronized void broadcastMessage(String message, ClientHandler sender) throws IOException {
+       broadcastMessage(message,sender,false);
+       writeMessageInToHistory(message,sender.getUsername());
+       info.warn(sender.getUsername()+": send message");
+    }
+    public synchronized void broadcastPrivateMessage(String message, ClientHandler sender) throws IOException {
+        String[] parts = message.split("\\s+");
+        String recipient = parts[1];
+        String textMessage = parts[2];
+        for (ClientHandler client: clients) {
+            if(client.getUsername().equals(recipient)) {
+                client.sendMessage(sender.getUsername(), textMessage);
+            }
+        }
+        info.warn(sender.getUsername()+": send message to "+ recipient);
+    }
+    public synchronized void changeUsername(String message, ClientHandler sender) throws SQLException, IOException {
+        String [] parts = message.split("\\s+");
+        String newUsername = parts[1];
+        authenticationService.changeUsername(sender.getUsername(), newUsername);
+        for (ClientHandler client: clients) {
+            client.sendNewUsername(sender, newUsername);
+        }
+        sender.setUsername(newUsername);
+        info.warn(sender.getUsername()+": change Username to "+ newUsername);
+    }
+}
+
+
